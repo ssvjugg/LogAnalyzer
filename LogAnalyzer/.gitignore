@@ -36,3 +36,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+logs
+transactions_by_users

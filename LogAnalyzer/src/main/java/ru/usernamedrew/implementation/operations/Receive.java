@@ -2,10 +2,12 @@ package ru.usernamedrew.implementation.operations;
 
 import ru.usernamedrew.implementation.Transaction;
 
-public class Recive extends Transaction {
+import java.math.BigDecimal;
+
+public class Receive extends Transaction {
     private final String sender;
 
-    public Recive(double amount, String sender) {
+    public Receive(BigDecimal amount, String sender) {
         super(amount);
         if (sender == null || sender.isEmpty()) {
             throw new IllegalArgumentException("Sender is empty");
@@ -15,5 +17,10 @@ public class Recive extends Transaction {
 
     public String getSender() {
         return sender;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("received  %s from %s", getAmount(), sender);
     }
 }

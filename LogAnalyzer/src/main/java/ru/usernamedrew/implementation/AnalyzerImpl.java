@@ -2,10 +2,11 @@ package ru.usernamedrew.implementation;
 
 import ru.usernamedrew.api.Analyzer;
 import ru.usernamedrew.api.Parser;
-import ru.usernamedrew.implementation.operations.Recive;
+import ru.usernamedrew.implementation.operations.Receive;
 import ru.usernamedrew.implementation.operations.Transfer;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ public class AnalyzerImpl implements Analyzer {
 
         userLogs.forEach((key, value) -> {
             value.sort(Comparator.comparing(Event::getCreatedAt));
-            writeToFile(outputPath.resolve(key + ".log"));
+            writeToFile(key, value);
         });
     }
 
@@ -44,7 +45,7 @@ public class AnalyzerImpl implements Analyzer {
                 processUserEvent(e);
 
                 if (e.getOperation() instanceof Transfer transfer) {
-                    processUserEvent(new Event(e.getCreatedAt(), new Recive(transfer.getAmount(), e.getUser()), transfer.getRecipient()));
+                    processUserEvent(new Event(e.getCreatedAt(), new Receive(transfer.getAmount(), e.getUser()), transfer.getRecipient()));
                 }
             });
         } catch (IOException e) {
@@ -56,7 +57,19 @@ public class AnalyzerImpl implements Analyzer {
         userLogs.computeIfAbsent(event.getUser(), k -> new ArrayList<>()).add(event);
     }
 
-    private void writeToFile(Path path) {
+    private void writeToFile(String user, List<Event> events) {
+        Path path = outputPath.resolve(user + ".log");
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(path))) {
+            for (Event event : events) {
+                writer.println(event.toString());
+            }
+            writer.println(String.format("%s final balance %s", user, calculateCurrentBalance(events)));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
+    private double calculateCurrentBalance(List<Event> events) {
+        return 0;
     }
 }

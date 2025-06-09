@@ -1,6 +1,7 @@
 package ru.usernamedrew.implementation;
 
 import ru.usernamedrew.api.Operation;
+import ru.usernamedrew.api.Parser;
 
 import java.time.LocalDateTime;
 
@@ -25,5 +26,10 @@ public class Event {
 
     public String getUser() {
         return user;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", Parser.formatter.format(createdAt), user, operation);
     }
 }
