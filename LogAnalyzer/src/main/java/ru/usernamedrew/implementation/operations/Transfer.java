@@ -9,7 +9,7 @@ public class Transfer extends Transaction {
 
     public Transfer(double amount, String recipient) {
         super(amount);
-        if ((recipient == null || recipient.isEmpty())) {
+        if (recipient == null || recipient.isEmpty()) {
             throw new IllegalArgumentException("Recipient is empty");
         }
         this.recipient = recipient;
