@@ -1,15 +1,20 @@
 package ru.usernamedrew.implementation;
 
 import ru.usernamedrew.api.Analyzer;
+import ru.usernamedrew.api.Operation;
 import ru.usernamedrew.api.Parser;
+import ru.usernamedrew.implementation.operations.BalanceInquiry;
 import ru.usernamedrew.implementation.operations.Receive;
 import ru.usernamedrew.implementation.operations.Transfer;
+import ru.usernamedrew.implementation.operations.Withdrawal;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -63,13 +68,29 @@ public class AnalyzerImpl implements Analyzer {
             for (Event event : events) {
                 writer.println(event.toString());
             }
-            writer.println(String.format("%s final balance %s", user, calculateCurrentBalance(events)));
+            writer.println(String.format("[%s] %s final balance %s", Parser.formatter.format(LocalDateTime.now()), user, calculateCurrentBalance(events)));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private double calculateCurrentBalance(List<Event> events) {
-        return 0;
+    private BigDecimal calculateCurrentBalance(List<Event> events) {
+        BigDecimal balance = BigDecimal.ZERO;
+
+        for (Event event : events) {
+            Operation operation = event.getOperation();
+            // TODO
+            if (operation instanceof BalanceInquiry amount) {
+                balance = amount.getAmount();
+            } else if (operation instanceof Transfer transfer) {
+                balance = balance.subtract(transfer.getAmount());
+            } else if (operation instanceof Receive receive) {
+                balance = balance.add(receive.getAmount());
+            } else if (operation instanceof Withdrawal withdrew) {
+                balance = balance.subtract(withdrew.getAmount());
+            }
+        }
+
+        return balance;
     }
 }

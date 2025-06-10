@@ -30,6 +30,6 @@ public class Event {
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", Parser.formatter.format(createdAt), user, operation);
+        return String.format("[%s] %s %s", Parser.formatter.format(createdAt), user, operation);
     }
 }
