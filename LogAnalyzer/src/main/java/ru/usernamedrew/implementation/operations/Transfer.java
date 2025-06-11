@@ -1,5 +1,6 @@
 package ru.usernamedrew.implementation.operations;
 
+import ru.usernamedrew.exeptions.NegativeAmountException;
 import ru.usernamedrew.implementation.Transaction;
 
 import java.math.BigDecimal;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 public class Transfer extends Transaction {
     private final String recipient;
 
-    public Transfer(BigDecimal amount, String recipient) {
+    public Transfer(BigDecimal amount, String recipient) throws NegativeAmountException {
         super(amount);
         if (recipient == null || recipient.isEmpty()) {
             throw new IllegalArgumentException("Recipient is empty");

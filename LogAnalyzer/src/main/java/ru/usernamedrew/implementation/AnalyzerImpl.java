@@ -3,6 +3,8 @@ package ru.usernamedrew.implementation;
 import ru.usernamedrew.api.Analyzer;
 import ru.usernamedrew.api.Operation;
 import ru.usernamedrew.api.Parser;
+import ru.usernamedrew.exeptions.NegativeAmountException;
+import ru.usernamedrew.exeptions.UnknownOperationException;
 import ru.usernamedrew.implementation.operations.BalanceInquiry;
 import ru.usernamedrew.implementation.operations.Receive;
 import ru.usernamedrew.implementation.operations.Transfer;
@@ -35,9 +37,10 @@ public class AnalyzerImpl implements Analyzer {
         Files.createDirectories(outputPath);
 
         try (Stream<Path> paths = Files.list(inputPath)) {
-            paths.filter(path -> path.toString().endsWith(".log")).forEach(this::processFile);
+            paths.filter(path -> path.toString().endsWith(".log")).forEach(this::processFile); // Log processing
         }
 
+        // For all users, we are sort their logs and generate summary files.
         userLogs.forEach((key, value) -> {
             value.sort(Comparator.comparing(Event::getCreatedAt));
             writeToFile(key, value);
@@ -46,15 +49,32 @@ public class AnalyzerImpl implements Analyzer {
 
     private void processFile(Path path) {
         try (Stream<String> lines = Files.lines(path)) {
-            lines.map(parser::parse).forEach(e -> {
+            lines.map(this::parseLineSafely).forEach(e -> {
                 processUserEvent(e);
 
+                // If the transaction was a Transfer we write it as a Receive to recipient
                 if (e.getOperation() instanceof Transfer transfer) {
-                    processUserEvent(new Event(e.getCreatedAt(), new Receive(transfer.getAmount(), e.getUser()), transfer.getRecipient()));
+                    Operation receiveOperation = new Receive(transfer.getAmount(), e.getUser());
+
+                    processUserEvent(new Event(e.getCreatedAt(), receiveOperation, transfer.getRecipient()));
                 }
             });
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    /*
+        Helper method for processFile. This method can be considered a crutch,
+        since in the era of lambdas and method references, checked exceptions are a headache.
+     */
+    private Event parseLineSafely(String line) {
+        try {
+            return parser.parse(line);
+        } catch (NegativeAmountException | UnknownOperationException e) {
+            var exception = new IllegalStateException(e.getMessage());
+            exception.initCause(e);
+            throw exception;
         }
     }
 
@@ -92,5 +112,15 @@ public class AnalyzerImpl implements Analyzer {
         }
 
         return balance;
+    }
+
+    @Override
+    public Path getInputPath() {
+        return inputPath;
+    }
+
+    @Override
+    public Path getOutputPath() {
+        return outputPath;
     }
 }

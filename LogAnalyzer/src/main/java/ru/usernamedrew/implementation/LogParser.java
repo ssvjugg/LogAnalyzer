@@ -2,6 +2,8 @@ package ru.usernamedrew.implementation;
 
 import ru.usernamedrew.api.Operation;
 import ru.usernamedrew.api.Parser;
+import ru.usernamedrew.exeptions.NegativeAmountException;
+import ru.usernamedrew.exeptions.UnknownOperationException;
 import ru.usernamedrew.implementation.operations.BalanceInquiry;
 import ru.usernamedrew.implementation.operations.Transfer;
 import ru.usernamedrew.implementation.operations.Withdrawal;
@@ -12,7 +14,7 @@ import java.util.regex.Matcher;
 
 public class LogParser implements Parser {
     @Override
-    public Event parse(String line) {
+    public Event parse(String line) throws NegativeAmountException, UnknownOperationException {
         Matcher matcher = logPatter.matcher(line);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Invalid log format: " + line);
@@ -27,7 +29,9 @@ public class LogParser implements Parser {
             case "balance inquiry" -> new BalanceInquiry(amount);
             case "withdrew" -> new Withdrawal(amount);
             case "transferred" -> new Transfer(amount, matcher.group(5));
-            default -> throw new IllegalArgumentException("Unknown operation: " + operationName);
+            default -> {
+                throw new UnknownOperationException("Unknown operation: " + operationName);
+            }
         };
 
         return new Event(dateTime, operation, user);

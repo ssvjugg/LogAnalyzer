@@ -1,5 +1,7 @@
 package ru.usernamedrew.api;
 
+import ru.usernamedrew.exeptions.NegativeAmountException;
+import ru.usernamedrew.exeptions.UnknownOperationException;
 import ru.usernamedrew.implementation.Event;
 
 import java.time.format.DateTimeFormatter;
@@ -7,7 +9,13 @@ import java.util.regex.Pattern;
 
 public interface Parser {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    Pattern logPatter = Pattern.compile("^\\[(.*?)\\] (\\S+) (balance inquiry|transferred|withdrew) (\\d+(?:\\.\\d+)?)(?: to (\\S+))?$");
+    Pattern logPatter = Pattern.compile("^\\[(.*?)\\] (\\S+) (balance inquiry|transferred|withdrew) (-?\\d+(?:\\.\\d+)?)(?: to (\\S+))?$");
 
-    Event parse(String line);
+    /**
+     * This methode is responsible for selecting an Event from a string.
+     * @param line Text from log file that should be parsed
+     * @return Event model that represents some event in application
+     * @throws NegativeAmountException if the amount of operation was negative
+     */
+    Event parse(String line) throws NegativeAmountException, UnknownOperationException;
 }
