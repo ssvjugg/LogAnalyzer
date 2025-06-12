@@ -1,27 +1,21 @@
 package ru.usernamedrew.implementation;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import ru.usernamedrew.api.Analyzer;
-import ru.usernamedrew.api.Parser;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
+import ru.usernamedrew.api.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 import java.util.stream.Stream;
 
 class AnalyzerImplTest {
     private Analyzer analyzer;
+    private final Parser parser = new LogParser();
+    private final Path inputPath = Path.of("logs/");
 
     @BeforeEach
     void setUp() throws IOException {
-        Path inputPath = Path.of("logs/");
         Files.createDirectories(inputPath);
-        Parser parser = new LogParser();
         analyzer = new AnalyzerImpl(inputPath, Path.of("transactions_by_users"), parser);
     }
 

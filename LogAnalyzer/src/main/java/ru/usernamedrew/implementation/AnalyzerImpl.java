@@ -1,29 +1,20 @@
 package ru.usernamedrew.implementation;
 
-import ru.usernamedrew.api.Analyzer;
-import ru.usernamedrew.api.Operation;
-import ru.usernamedrew.api.Parser;
-import ru.usernamedrew.exeptions.NegativeAmountException;
-import ru.usernamedrew.exeptions.UnknownOperationException;
-import ru.usernamedrew.implementation.operations.BalanceInquiry;
-import ru.usernamedrew.implementation.operations.Receive;
-import ru.usernamedrew.implementation.operations.Transfer;
-import ru.usernamedrew.implementation.operations.Withdrawal;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UncheckedIOException;
+import ru.usernamedrew.api.*;
+import ru.usernamedrew.exeptions.*;
+import ru.usernamedrew.implementation.operations.*;
+import java.io.*;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class AnalyzerImpl implements Analyzer {
+public final class AnalyzerImpl implements Analyzer {
     private final Path inputPath;
     private final Path outputPath;
     private final Parser parser;
+    // For parallel execution we can use ConcurrentHashMap<String, CopyOnWriteArrayList<Event>> but for current size of logs it's unnecessary
     private final Map<String, List<Event>> userLogs = new HashMap<>();
 
     public AnalyzerImpl(Path inputPath, Path outputPath, Parser parser) {
@@ -36,8 +27,9 @@ public class AnalyzerImpl implements Analyzer {
     public void process() throws IOException {
         Files.createDirectories(outputPath);
 
+        // Log processing.
         try (Stream<Path> paths = Files.list(inputPath)) {
-            paths.filter(path -> path.toString().endsWith(".log")).forEach(this::processFile); // Log processing
+            paths.filter(path -> path.toString().endsWith(".log")).forEach(this::processFile);
         }
 
         // For all users, we are sort their logs and generate summary files.
@@ -99,7 +91,8 @@ public class AnalyzerImpl implements Analyzer {
 
         for (Event event : events) {
             Operation operation = event.getOperation();
-            // TODO
+
+            // If we know the amount of balance at the moment, we shall update it, because necessary logs can be missed
             if (operation instanceof BalanceInquiry amount) {
                 balance = amount.getAmount();
             } else if (operation instanceof Transfer transfer) {

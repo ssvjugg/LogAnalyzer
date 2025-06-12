@@ -1,13 +1,9 @@
 package ru.usernamedrew.implementation;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.usernamedrew.api.Parser;
-import ru.usernamedrew.exeptions.NegativeAmountException;
-import ru.usernamedrew.exeptions.UnknownOperationException;
-import ru.usernamedrew.implementation.operations.BalanceInquiry;
-import ru.usernamedrew.implementation.operations.Transfer;
-import ru.usernamedrew.implementation.operations.Withdrawal;
+import ru.usernamedrew.exeptions.*;
+import ru.usernamedrew.implementation.operations.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,5 +32,15 @@ class LogParserTest {
 
         assertEquals("user002", event.getUser());
         assertInstanceOf(Withdrawal.class, event.getOperation());
+    }
+
+    @Test
+    void parseNegativeAmountException()  {
+        assertThrows(NegativeAmountException.class, () -> {parser.parse("[2025-05-10 23:55:32] user002 withdrew -50");});
+    }
+
+    @Test
+    void parseInvalidFormatException()  {
+        assertThrows(IllegalArgumentException.class, () -> {parser.parse("[2025-05-10 23:55:32]");});
     }
 }

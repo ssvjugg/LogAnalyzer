@@ -4,7 +4,6 @@ import ru.usernamedrew.exeptions.NegativeAmountException;
 import ru.usernamedrew.implementation.Transaction;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class Transfer extends Transaction {
     private final String recipient;

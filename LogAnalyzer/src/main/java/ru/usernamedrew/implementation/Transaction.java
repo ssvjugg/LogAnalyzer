@@ -4,8 +4,10 @@ import ru.usernamedrew.api.Operation;
 import ru.usernamedrew.exeptions.NegativeAmountException;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
+/**
+ * Class that represents operations associated with money
+ */
 public abstract class Transaction implements Operation {
     private final BigDecimal amount;
 
